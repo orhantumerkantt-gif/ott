@@ -9,6 +9,7 @@ import { siparisNoUret, urunBilgisi, type SatinAlinacak } from "@/lib/siparis";
 import { kurusTL } from "@/lib/site";
 import { SIPARIS_DURUM } from "@/lib/sabitler";
 import { Uyari } from "@/components/ui";
+import { OdemeOnay, SOZLESME_SURUM } from "./onay";
 
 /**
  * Tüm ödeme başlangıçlarının ortak gövdesi.
@@ -18,14 +19,33 @@ import { Uyari } from "@/components/ui";
 export async function OdemeBaslat({
   istek,
   geriYol,
+  onaylandi = false,
 }: {
   istek: SatinAlinacak;
   geriYol: string;
+  /** Sözleşme + cayma hakkı kutucukları işaretlenip gönderildi mi? */
+  onaylandi?: boolean;
 }) {
   const kullanici = await oturumZorunlu(geriYol);
 
   const urun = await urunBilgisi(istek);
   if (!urun) redirect(geriYol);
+
+  // ★ ONAY KAPISI — sipariş kaydı bile bundan SONRA oluşur.
+  //   "Dijital üründe iade yoktur" maddesi, ancak alıcı bunu ödemeden önce
+  //   açıkça kabul ettiyse geçerlidir (Mesafeli Sözleşmeler Yön. m.15).
+  //   Yan fayda: sayfayı açıp vazgeçen ziyaretçi artık BEKLIYOR durumunda
+  //   ölü sipariş bırakmıyor.
+  if (!onaylandi) {
+    return (
+      <OdemeOnay
+        urunAdi={urun.ad}
+        tutarKurus={urun.tutarKurus}
+        tur={istek.tur}
+        geriYol={geriYol}
+      />
+    );
+  }
 
   // Fiyat, formdan DEĞİL veritabanından okunur. Aksi halde istemci
   // gönderdiği tutarı değiştirip 1 TL'ye satın alabilirdi.
@@ -48,6 +68,8 @@ export async function OdemeBaslat({
       adSoyad: kullaniciBilgi?.adSoyad ?? kullanici.name ?? "-",
       email: kullaniciBilgi?.email ?? kullanici.email ?? "-",
       telefon: kullaniciBilgi?.telefon ?? "-",
+      sozlesmeOnayAt: new Date(),
+      sozlesmeSurum: SOZLESME_SURUM,
     },
   });
 

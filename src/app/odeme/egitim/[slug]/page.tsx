@@ -8,11 +8,18 @@ export const metadata: Metadata = {
 
 export default async function EgitimOdemesi({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ onay?: string }>;
 }) {
   const { slug } = await params;
+  const { onay } = await searchParams;
   return (
-    <OdemeBaslat istek={{ tur: "EGITIM", slug }} geriYol={`/egitimler/${slug}`} />
+    <OdemeBaslat
+      istek={{ tur: "EGITIM", slug }}
+      geriYol={`/egitimler/${slug}`}
+      onaylandi={onay === "1"}
+    />
   );
 }

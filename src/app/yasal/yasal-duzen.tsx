@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { site, yasalMenu } from "@/lib/site";
+import { oturumVarsa } from "@/lib/yetki";
+import { ROL } from "@/lib/sabitler";
 
-/** Satıcı bilgileri eksikse yasal metinler geçerli sayılmaz — açıkça uyar. */
+/**
+ * Satıcı bilgilerinden eksik olanlar.
+ * ★ Bu uyarı YALNIZCA yöneticiye gösterilir: müşteriye "bu metin henüz
+ *   tamamlanmadı" yazan bir sözleşme sayfası, eksik alanın kendisinden
+ *   daha çok güven kaybettirir. Orhan siteye kendi girdiğinde görür.
+ */
 function eksikSaticiBilgisi() {
   const s = site.saticiBilgileri;
   const eksikler: string[] = [];
@@ -13,7 +20,7 @@ function eksikSaticiBilgisi() {
   return eksikler;
 }
 
-export function YasalDuzen({
+export async function YasalDuzen({
   baslik,
   guncelleme,
   children,
@@ -22,7 +29,8 @@ export function YasalDuzen({
   guncelleme: string;
   children: React.ReactNode;
 }) {
-  const eksikler = eksikSaticiBilgisi();
+  const kullanici = await oturumVarsa();
+  const eksikler = kullanici?.rol === ROL.ADMIN ? eksikSaticiBilgisi() : [];
 
   return (
     <section className="kapsayici grid max-w-6xl gap-10 py-14 lg:grid-cols-[240px_1fr]">
@@ -50,16 +58,17 @@ export function YasalDuzen({
           <div className="mt-6 flex gap-3 rounded-xl border border-uyari/30 bg-uyari/10 p-4 text-sm text-uyari">
             <AlertTriangle size={18} className="mt-0.5 shrink-0" />
             <div>
-              <strong>Bu metin henüz tamamlanmadı.</strong>
+              <strong>Yalnızca sen görüyorsun (yönetici notu).</strong>
               <p className="mt-1 leading-relaxed">
                 Satıcı bilgilerinden şunlar eksik: <strong>{eksikler.join(", ")}</strong>.
-                Site yayına alınmadan önce bu alanlar{" "}
+                Bu alanlar{" "}
                 <code className="rounded bg-gece-800 px-1.5 py-0.5 text-xs">
                   src/lib/site.ts
                 </code>{" "}
                 dosyasındaki <code className="text-xs">saticiBilgileri</code> bölümüne
-                yazılmalıdır. Eksik bilgiyle yayınlanan mesafeli satış sözleşmesi
-                mevzuata uygun sayılmaz.
+                yazılmalıdır. Bir tüketici şikâyetinde mesafeli satış sözleşmesinin
+                mevzuata uygunluğu bu bilgilerle değerlendirilir. Müşteriler bu
+                kutuyu görmez.
               </p>
             </div>
           </div>
@@ -73,27 +82,36 @@ export function YasalDuzen({
   );
 }
 
-/** Yasal metinlerde tekrar eden satıcı bilgisi tablosu. */
+/**
+ * Yasal metinlerde tekrar eden satıcı bilgisi tablosu.
+ * ★ Değeri boş olan satır tabloya HİÇ girmez — müşteriye yarım bir tablo
+ *   göstermek yerine yalnızca doğrulanabilir bilgiler yayınlanır.
+ */
 export function SaticiTablosu() {
   const s = site.saticiBilgileri;
   const satirlar: [string, string][] = [
     ["Satıcı", s.unvan],
-    ["Adres", s.adres || "— (yayın öncesi doldurulacak)"],
-    ["Telefon", s.telefon || "— (yayın öncesi doldurulacak)"],
+    ["Şirket türü", s.sirketTuru],
+    ["Adres", s.adres],
+    ["Telefon", s.telefon],
     ["E-posta", s.eposta],
-    ["Vergi Dairesi / No", [s.vergiDairesi, s.vergiNo].filter(Boolean).join(" / ") || "— (yayın öncesi doldurulacak)"],
+    ["Vergi Dairesi", s.vergiDairesi],
+    ["Vergi / TC Kimlik No", s.vergiNo],
+    ["MERSİS No", s.mersisNo],
     ["İnternet Sitesi", site.url],
   ];
 
   return (
     <table>
       <tbody>
-        {satirlar.map(([k, v]) => (
-          <tr key={k}>
-            <th className="text-left">{k}</th>
-            <td>{v}</td>
-          </tr>
-        ))}
+        {satirlar
+          .filter(([, v]) => Boolean(v))
+          .map(([k, v]) => (
+            <tr key={k}>
+              <th className="text-left">{k}</th>
+              <td>{v}</td>
+            </tr>
+          ))}
       </tbody>
     </table>
   );

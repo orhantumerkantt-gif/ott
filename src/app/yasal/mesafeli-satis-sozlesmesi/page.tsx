@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function MesafeliSatisSozlesmesi() {
   return (
-    <YasalDuzen baslik="Mesafeli Satış Sözleşmesi" guncelleme="14 Ağustos 2026">
+    <YasalDuzen baslik="Mesafeli Satış Sözleşmesi" guncelleme="16 Ağustos 2026">
       <h2>Madde 1 — Taraflar</h2>
       <h3>Satıcı</h3>
       <SaticiTablosu />
@@ -85,12 +85,24 @@ export default function MesafeliSatisSozlesmesi() {
         Kart bilgileri Satıcı tarafından görülmez, saklanmaz ve işlenmez.
       </p>
 
-      <h2>Madde 6 — Cayma hakkı</h2>
+      <h2>Madde 6 — Cayma hakkı ve iade</h2>
       <p>
         Mesafeli Sözleşmeler Yönetmeliği&apos;nin 15. maddesi uyarınca,{" "}
         <strong>elektronik ortamda anında ifa edilen ve tüketiciye anında teslim
         edilen gayrimaddi mallara ilişkin sözleşmelerde cayma hakkı kullanılamaz.</strong>{" "}
-        Ayrıntılar ve istisnalar için{" "}
+        Eğitim setleri ve yazılımlar bu kapsamdadır: ödeme onaylandığı anda erişim
+        açılır ve teslim tamamlanır. <strong>Bu ürünlerde satış sonrası iade veya
+        geri ödeme yapılmaz.</strong>
+      </p>
+      <p>
+        Alıcı, ödeme sayfasında siparişi onaylamadan önce dijital içeriğin anında
+        teslim edildiğini ve cayma hakkının bulunmadığını ayrı bir kutucukla açıkça
+        kabul eder. Bu onay verilmeden ödeme başlatılamaz ve onay tarihi sipariş
+        kaydına işlenir.
+      </p>
+      <p>
+        Bu madde, Satıcı&apos;nın ayıplı hizmetten doğan sorumluluğunu ortadan
+        kaldırmaz. Ayrıntılar için{" "}
         <a href="/yasal/iade-politikasi">İptal ve İade Politikası</a> sayfasına bakınız.
       </p>
 

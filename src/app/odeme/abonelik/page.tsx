@@ -6,6 +6,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AbonelikOdemesi() {
-  return <OdemeBaslat istek={{ tur: "ABONELIK" }} geriYol="/abonelik" />;
+export default async function AbonelikOdemesi({
+  searchParams,
+}: {
+  searchParams: Promise<{ onay?: string }>;
+}) {
+  const { onay } = await searchParams;
+  return (
+    <OdemeBaslat
+      istek={{ tur: "ABONELIK" }}
+      geriYol="/abonelik"
+      onaylandi={onay === "1"}
+    />
+  );
 }

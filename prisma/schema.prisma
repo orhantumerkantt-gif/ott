@@ -160,6 +160,11 @@ model Order {
   createdAt    DateTime  @default(now())
   odendiAt     DateTime?
 
+  // Cayma hakkı feragati. "Dijital ürün iade edilmez" maddesi ancak alıcı
+  // ödemeden ÖNCE bunu açıkça onayladıysa geçerlidir; onayın kaydı burada durur.
+  sozlesmeOnayAt DateTime?
+  sozlesmeSurum  String?
+
   randevu      Booking?
 
   @@index([durum, createdAt])

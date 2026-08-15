@@ -31,16 +31,30 @@ export const site = {
     x: "",
   },
 
-  /** Yasal metinlerde kullanılan satıcı bilgileri. Yayına almadan önce doldurulmalı. */
+  /**
+   * Yasal metinlerde kullanılan satıcı bilgileri.
+   * Şahıs şirketinde "ünvan" kişinin kendi adıdır; OTT Medya markadır.
+   * ★ Boş bırakılan alanlar yasal metinlerde HİÇ gösterilmez (müşteriye
+   *   "— doldurulacak" yazmak, eksik bilgiden daha kötü görünür). Eksik
+   *   uyarısı yalnızca yönetici olarak giriş yapıldığında çıkar.
+   */
   saticiBilgileri: {
-    unvan: "Orhan Tümerkan",
-    vergiDairesi: "",
+    unvan: "Orhan Tümerkan Tunçay (OTT Medya)",
+    sirketTuru: "Şahıs şirketi",
+    vergiDairesi: "Söke Vergi Dairesi",
     vergiNo: "",
     mersisNo: "",
     adres: "",
     telefon: "",
     eposta: "orhantumerkantt@gmail.com",
   },
+
+  /**
+   * İade politikası. `kesin` = dijital ürünlerde satış sonrası iade yok
+   * (Orhan'ın kararı, 15 Ağustos 2026). Bu değerin geçerli olabilmesi için
+   * ödeme öncesi açık cayma-hakkı feragati alınır — bkz. odeme/onay.tsx.
+   */
+  iadePolitikasi: "kesin",
 
   /** Orhan'ın beyan ettiği ve/veya panel görüntüleriyle desteklenen rakamlar. */
   rakamlar: [

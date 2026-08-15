@@ -118,8 +118,10 @@ export default async function AbonelikSayfasi() {
             </li>
           </ol>
           <p className="mt-4 text-xs text-metin3">
-            Dijital içerik olduğu için, erişim açıldıktan sonra cayma hakkı mevzuat
-            gereği kullanılamaz. Ayrıntılar{" "}
+            Dijital içerik olduğu için, ödeme onaylandıktan sonra cayma hakkı
+            mevzuat gereği kullanılamaz ve iade yapılmaz. Aboneliği istediğin zaman
+            iptal edebilirsin; ödediğin dönemin sonuna kadar erişimin devam eder.
+            Ayrıntılar{" "}
             <a href="/yasal/iade-politikasi" className="text-altin-400 hover:underline">
               İptal ve İade Politikası
             </a>{" "}

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function OnBilgilendirmeFormu() {
   return (
-    <YasalDuzen baslik="Ön Bilgilendirme Formu" guncelleme="14 Ağustos 2026">
+    <YasalDuzen baslik="Ön Bilgilendirme Formu" guncelleme="16 Ağustos 2026">
       <p>
         Bu form, Mesafeli Sözleşmeler Yönetmeliği uyarınca, sipariş vermeden önce
         tüketiciye sunulması zorunlu bilgileri içerir.
@@ -65,11 +65,22 @@ export default function OnBilgilendirmeFormu() {
         <li>Danışmanlık hizmetinde tarih, taraflarca karşılıklı belirlenir.</li>
       </ul>
 
-      <h2>4. Cayma hakkı</h2>
+      <h2>4. Cayma hakkı — dijital üründe iade yoktur</h2>
       <p>
-        Dijital içerik anında ifa edildiğinden, erişim açıldıktan sonra cayma hakkı
-        kullanılamaz. Erişim hiç kullanılmadıysa 14 gün içinde tam iade yapılır.
-        Ayrıntı: <a href="/yasal/iade-politikasi">İptal ve İade Politikası</a>.
+        Eğitim setleri ve yazılımlar, ödemenin onaylandığı anda teslim edilen
+        dijital ürünlerdir. Mesafeli Sözleşmeler Yönetmeliği&apos;nin 15. maddesi
+        uyarınca bu ürünlerde <strong>cayma hakkı kullanılamaz ve satış sonrası
+        iade yapılmaz.</strong>
+      </p>
+      <p>
+        Bu nedenle ödeme sayfasında, siparişi onaylamadan önce bu durumu açıkça
+        kabul etmeniz istenir. Onay vermeden ödeme başlatılamaz.
+      </p>
+      <p>
+        Satın almadan önce ücretsiz önizleme derslerini izlemenizi ve sorularınızı{" "}
+        <a href={`mailto:${site.iletisim.email}`}>{site.iletisim.email}</a> adresine
+        iletmenizi öneririz. Ayrıntı:{" "}
+        <a href="/yasal/iade-politikasi">İptal ve İade Politikası</a>.
       </p>
 
       <h2>5. Şikâyet ve itiraz</h2>
