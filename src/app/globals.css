@@ -1,26 +1,163 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ------------------------------------------------------------------
+   Dedektif Orhan — tasarım sistemi
+   Koyu "gece dosyası" zemini + altın vurgu. Renkleri sayfalarda elle
+   yazma; hepsi burada token olarak tanımlı, Tailwind sınıfı olarak çıkar
+   (bg-gece-900, text-altin-400 gibi).
+   ------------------------------------------------------------------ */
+@theme {
+  /* Zemin ve yüzeyler */
+  --color-gece-950: #05070f;
+  --color-gece-900: #080c17;
+  --color-gece-850: #0b1120;
+  --color-gece-800: #101a2e;
+  --color-gece-700: #17233d;
+  --color-gece-600: #22304f;
+
+  /* Altın vurgu — markanın ana rengi */
+  --color-altin-200: #ffe9a8;
+  --color-altin-300: #ffd970;
+  --color-altin-400: #ffc53d;
+  --color-altin-500: #f0ad1c;
+  --color-altin-600: #c98a0e;
+
+  /* İkincil vurgu — "iz sürme" mavisi */
+  --color-iz-300: #7dd3fc;
+  --color-iz-400: #38bdf8;
+  --color-iz-500: #0ea5e9;
+
+  /* Metin */
+  --color-metin: #eaeff9;
+  --color-metin2: #97a5c2;
+  --color-metin3: #64748b;
+
+  /* Durum */
+  --color-basari: #34d399;
+  --color-uyari: #fbbf24;
+  --color-hata: #f87171;
+
+  --font-baslik: var(--font-sora), system-ui, sans-serif;
+  --font-govde: var(--font-inter), system-ui, sans-serif;
+
+  --radius-kart: 1rem;
+
+  --animate-parla: parla 2.6s ease-in-out infinite;
+  --animate-yukari: yukari 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes parla {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+@keyframes yukari {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  /* Sabit başlık, bölüm bağlantılarında başlığı kesmesin */
+  scroll-padding-top: 5.5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-gece-950);
+  color: var(--color-metin);
+  font-family: var(--font-govde);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-baslik);
+  letter-spacing: -0.02em;
+}
+
+/* Odak halkası: klavyeyle gezen kullanıcı nerede olduğunu görebilmeli.
+   Sadece :focus kullanmak fare tıklamalarında da halka çizer, o yüzden
+   :focus-visible tercih edildi. */
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--color-altin-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Windows/Chrome'da açılır liste İŞLETİM SİSTEMİ katmanında çizilir ve
+   zemini beyazdır. select'e açık metin rengi verip option'a zemin
+   vermezsek seçenekler beyaz üstüne açık gri kalır ve okunmaz. */
+select option,
+select optgroup {
+  background-color: var(--color-gece-800);
+  color: var(--color-metin);
+}
+
+::selection {
+  background: var(--color-altin-400);
+  color: var(--color-gece-950);
+}
+
+/* İnce kaydırma çubuğu */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-gece-900); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-gece-600);
+  border-radius: 99px;
+  border: 2px solid var(--color-gece-900);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-gece-700); }
+
+/* Hareket azaltma tercihi olan kullanıcıya animasyon dayatma */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Tekrar eden desenler ---- */
+
+@utility kapsayici {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1.25rem;
+}
+
+@utility kart {
+  background: color-mix(in oklab, var(--color-gece-850) 92%, transparent);
+  border: 1px solid var(--color-gece-700);
+  border-radius: var(--radius-kart);
+}
+
+@utility altin-yazi {
+  background: linear-gradient(100deg, var(--color-altin-200), var(--color-altin-400) 45%, var(--color-altin-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Blog içeriği için okunur tipografi */
+.prose-dedektif {
+  --tw-prose-body: var(--color-metin2);
+  --tw-prose-headings: var(--color-metin);
+  --tw-prose-links: var(--color-altin-400);
+  --tw-prose-bold: var(--color-metin);
+  --tw-prose-counters: var(--color-altin-400);
+  --tw-prose-bullets: var(--color-altin-600);
+  --tw-prose-quotes: var(--color-metin);
+  --tw-prose-quote-borders: var(--color-altin-500);
+  --tw-prose-code: var(--color-altin-300);
+  --tw-prose-hr: var(--color-gece-700);
+  --tw-prose-th-borders: var(--color-gece-600);
+  --tw-prose-td-borders: var(--color-gece-700);
 }

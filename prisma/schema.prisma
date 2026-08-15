@@ -1,0 +1,222 @@
+// Dedektif Orhan - veritabanı şeması
+// SQLite ile geliştirilir; üretimde PostgreSQL'e geçmek için provider'ı değiştirmek yeterli.
+// SQLite enum desteklemediği için durum alanları String tutulur, izinli değerler
+// src/lib/sabitler.ts içinde tanımlıdır.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  adSoyad      String
+  telefon      String?
+  passwordHash String
+  rol          String    @default("UYE") // UYE | ADMIN
+  epostaOnayli Boolean   @default(false)
+  onayToken    String?
+  sifreToken   String?
+  sifreTokenSonu DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  siparisler   Order[]
+  kayitlar     Enrollment[]
+  abonelik     Subscription?
+  randevular   Booking[]
+
+  @@index([rol])
+}
+
+model Course {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  baslik        String
+  altBaslik     String?
+  aciklama      String   // Markdown
+  kapakGorsel   String?
+  seviye        String   @default("BASLANGIC") // BASLANGIC | ORTA | ILERI
+  sureDk        Int      @default(0)
+  fiyatKurus    Int
+  eskiFiyatKurus Int?
+  abonelikDahil Boolean  @default(true)
+  yayinda       Boolean  @default(false)
+  oneCikan      Boolean  @default(false)
+  sira          Int      @default(0)
+  seoBaslik     String?
+  seoAciklama   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  dersler       Lesson[]
+  kayitlar      Enrollment[]
+
+  @@index([yayinda, sira])
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  courseId    String
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  baslik      String
+  aciklama    String?
+  videoUrl    String? // YouTube/Vimeo gömme adresi veya imzalı dosya adresi
+  sureDk      Int     @default(0)
+  ucretsizOnizleme Boolean @default(false)
+  sira        Int     @default(0)
+
+  @@index([courseId, sira])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  kaynak    String   @default("SATIN_ALMA") // SATIN_ALMA | ABONELIK | MANUEL
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Software {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  ad            String
+  kisaAciklama  String
+  aciklama      String
+  kapakGorsel   String?
+  fiyatKurus    Int
+  abonelikDahil Boolean  @default(true)
+  surum         String   @default("1.0.0")
+  indirmeUrl    String?
+  platform      String   @default("Windows")
+  yayinda       Boolean  @default(false)
+  sira          Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([yayinda, sira])
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  ad          String
+  aciklama    String
+  fiyatKurus  Int
+  periyotAy   Int      @default(1)
+  ozellikler  String   // JSON dizi
+  aktif       Boolean  @default(true)
+  sira        Int      @default(0)
+
+  abonelikler Subscription[]
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          Plan      @relation(fields: [planId], references: [id])
+  durum         String    @default("BEKLIYOR") // BEKLIYOR | AKTIF | IPTAL | SURESI_DOLDU
+  baslangic     DateTime?
+  donemSonu     DateTime?
+  otomatikYenile Boolean  @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([durum])
+}
+
+model Order {
+  id           String    @id @default(cuid())
+  merchantOid  String    @unique // PayTR sipariş numarası (yalnız harf+rakam)
+  userId       String?
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tur          String    // EGITIM | YAZILIM | ABONELIK | DANISMANLIK
+  urunId       String?
+  urunAdi      String
+  tutarKurus   Int
+  durum        String    @default("BEKLIYOR") // BEKLIYOR | ODENDI | BASARISIZ | IADE
+  adSoyad      String
+  email        String
+  telefon      String
+  adres        String    @default("-")
+  paytrYanit   String?   // callback ham gövdesi (denetim izi)
+  hataMesaji   String?
+  createdAt    DateTime  @default(now())
+  odendiAt     DateTime?
+
+  randevu      Booking?
+
+  @@index([durum, createdAt])
+  @@index([email])
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderId     String?  @unique
+  order       Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  adSoyad     String
+  email       String
+  telefon     String
+  konu        String
+  tercihTarih String   // serbest metin: "Salı 14:00 civarı" gibi
+  notlar      String?
+  durum       String   @default("TALEP") // TALEP | ONAYLANDI | TAMAMLANDI | IPTAL
+  createdAt   DateTime @default(now())
+
+  @@index([durum, createdAt])
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  baslik      String
+  ozet        String
+  icerik      String    // Markdown
+  kapakGorsel String?
+  etiketler   String    @default("") // virgülle ayrık
+  yayinda     Boolean   @default(false)
+  yayinTarihi DateTime?
+  seoBaslik   String?
+  seoAciklama String?
+  okumaDk     Int       @default(5)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([yayinda, yayinTarihi])
+}
+
+model Testimonial {
+  id       String  @id @default(cuid())
+  adSoyad  String
+  rol      String?
+  metin    String
+  puan     Int     @default(5)
+  yayinda  Boolean @default(true)
+  sira     Int     @default(0)
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  adSoyad   String
+  email     String
+  telefon   String?
+  mesaj     String
+  kaynak    String   @default("iletisim")
+  okundu    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([okundu, createdAt])
+}
