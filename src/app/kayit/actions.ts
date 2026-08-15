@@ -6,6 +6,38 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { signIn } from "@/auth";
 import { ROL } from "@/lib/sabitler";
+import { epostaGonder, epostaSablonu } from "@/lib/eposta";
+import { site } from "@/lib/site";
+
+async function yeniUyeBildirimleri(adSoyad: string, email: string) {
+  await epostaGonder({
+    kime: email,
+    konu: `Aramıza hoş geldin, ${adSoyad.split(" ")[0]}!`,
+    html: epostaSablonu(
+      "Hesabın hazır",
+      `<p>Merhaba ${adSoyad},</p>
+       <p>${site.ad} ailesine katıldın. Artık ücretsiz önizleme derslerini
+          izleyebilir, eğitim setlerine ve aylık aboneliğe göz atabilirsin.</p>
+       <p>Sorun olursa bu e-postayı yanıtlaman yeterli.</p>`,
+      "Panelime Git",
+      `${site.url}/panel`,
+    ),
+    duzMetin: `Merhaba ${adSoyad}, ${site.ad} hesabın hazır: ${site.url}/panel`,
+  });
+
+  await epostaGonder({
+    kime: site.iletisim.email,
+    konu: `👤 Yeni üye — ${adSoyad}`,
+    html: epostaSablonu(
+      "Yeni üye kaydı",
+      `<p><strong>${adSoyad}</strong> siteye üye oldu.</p>
+       <p><strong>E-posta:</strong> ${email}</p>`,
+      "Üyeleri Gör",
+      `${site.url}/admin/uyeler`,
+    ),
+    duzMetin: `Yeni üye: ${adSoyad} (${email})`,
+  });
+}
 
 export type KayitDurum =
   | { durum: "bos" }
@@ -76,6 +108,12 @@ export async function kayitOl(
       rol: ROL.UYE,
     },
   });
+
+  // Hoş geldin + satıcıya bildirim. Hata yutulur: e-posta gitmese bile
+  // kayıt tamamlanmalı, kullanıcı kapıda kalmamalı.
+  void yeniUyeBildirimleri(adSoyad, email).catch((e) =>
+    console.error("[kayıt] Bildirim e-postaları gönderilemedi:", e),
+  );
 
   // Kayıttan hemen sonra oturum aç — kullanıcıyı bir de giriş formuyla uğraştırma.
   // `redirect: false` şart: Auth.js aksi halde kendi yönlendirmesini yapıp

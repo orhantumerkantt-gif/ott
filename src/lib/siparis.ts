@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import { db } from "@/lib/db";
 import { SIPARIS_DURUM, SIPARIS_TUR, ABONELIK_DURUM } from "@/lib/sabitler";
 import type { OdemeUrunTuru } from "@/lib/odeme";
+import { epostaGonder, epostaSablonu } from "@/lib/eposta";
+import { site, kurusTL } from "@/lib/site";
 
 /**
  * Sipariş numarası üretir.
@@ -139,7 +141,64 @@ export async function erisimAc(merchantOid: string): Promise<{ ilkKez: boolean }
     // doğrudan okunuyor (bkz. /panel/indir/[slug]).
   }
 
+  // Bildirimler EN SONA bırakıldı ve hataları yutuluyor:
+  // e-posta sunucusu cevap vermezse erişim yine de açılmış olmalı.
+  // Aksi halde SMTP arızası müşterinin satın aldığı ürüne erişememesine
+  // yol açardı — ödeme alınmış olmasına rağmen.
+  void siparisBildirimleriGonder(merchantOid).catch((e) =>
+    console.error("[sipariş] Bildirim e-postaları gönderilemedi:", e),
+  );
+
   return { ilkKez: true };
+}
+
+/** Ödeme onaylandığında hem Orhan'a hem müşteriye bilgi verir. */
+async function siparisBildirimleriGonder(merchantOid: string) {
+  const siparis = await db.order.findUnique({ where: { merchantOid } });
+  if (!siparis) return;
+
+  const tutar = kurusTL(siparis.tutarKurus);
+
+  // 1) Satıcıya: yeni sipariş bildirimi
+  await epostaGonder({
+    kime: site.iletisim.email,
+    konu: `💰 Yeni sipariş — ${tutar} — ${siparis.adSoyad}`,
+    html: epostaSablonu(
+      "Yeni sipariş aldın",
+      `<p><strong>${siparis.urunAdi}</strong></p>
+       <p style="font-size:22px;color:#ffc53d;margin:12px 0"><strong>${tutar}</strong></p>
+       <p><strong>Müşteri:</strong> ${siparis.adSoyad}<br>
+          <strong>E-posta:</strong> ${siparis.email}<br>
+          <strong>Telefon:</strong> ${siparis.telefon}<br>
+          <strong>Sipariş no:</strong> ${siparis.merchantOid}</p>
+       <p>Erişim otomatik olarak açıldı, yapman gereken bir şey yok.</p>`,
+      "Siparişi Panelde Gör",
+      `${site.url}/admin/siparisler`,
+    ),
+    duzMetin: `Yeni sipariş: ${siparis.urunAdi} — ${tutar} — ${siparis.adSoyad} (${siparis.email})`,
+  });
+
+  // 2) Müşteriye: satın alma onayı
+  const danismanlikMi = siparis.tur === SIPARIS_TUR.DANISMANLIK;
+  await epostaGonder({
+    kime: siparis.email,
+    konu: `Siparişin onaylandı — ${siparis.urunAdi}`,
+    html: epostaSablonu(
+      "Ödemen alındı, teşekkürler!",
+      `<p>Merhaba ${siparis.adSoyad},</p>
+       <p><strong>${siparis.urunAdi}</strong> için ödemen onaylandı.</p>
+       <p><strong>Tutar:</strong> ${tutar}<br>
+          <strong>Sipariş no:</strong> ${siparis.merchantOid}</p>
+       ${
+         danismanlikMi
+           ? "<p>Görüşme tarihi için en kısa sürede seninle iletişime geçeceğim.</p>"
+           : "<p>Erişimin <strong>açıldı</strong>. Panelinden hemen başlayabilirsin.</p>"
+       }`,
+      danismanlikMi ? undefined : "Panelime Git",
+      danismanlikMi ? undefined : `${site.url}/panel`,
+    ),
+    duzMetin: `${siparis.urunAdi} için ödemen onaylandı. Tutar: ${tutar}. Sipariş no: ${siparis.merchantOid}`,
+  });
 }
 
 /** Kullanıcı bu yazılımı indirebilir mi? Satın alma VEYA aktif abonelik. */
