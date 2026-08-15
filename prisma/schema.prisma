@@ -1,6 +1,11 @@
 // Dedektif Orhan - veritabanı şeması
-// SQLite ile geliştirilir; üretimde PostgreSQL'e geçmek için provider'ı değiştirmek yeterli.
-// SQLite enum desteklemediği için durum alanları String tutulur, izinli değerler
+//
+// PostgreSQL (Neon, Frankfurt). SQLite'tan geçildi: Vercel'de dosya sistemi
+// geçici olduğu için SQLite dosyası her güncellemede sıfırlanır ve üye/sipariş
+// kayıtları kaybolurdu.
+//
+// Durum alanları enum yerine String: hem SQLite döneminden kalan uyumluluk
+// hem de yeni durum eklerken veritabanı göçü gerekmemesi için. İzinli değerler
 // src/lib/sabitler.ts içinde tanımlıdır.
 
 generator client {
@@ -8,7 +13,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
