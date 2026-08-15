@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Örnek dosya İSTİSNA: gerçek değer içermez, yeni kurulumda yol gösterir
+!.env.ornek
 
 # veritabanı — üye ve sipariş verisi içerir, asla paylaşılmaz
 /prisma/*.db
